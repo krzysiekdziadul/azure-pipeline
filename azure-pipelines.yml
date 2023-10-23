@@ -1,0 +1,38 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+pool:
+  name: Default
+  demands: InteractiveSession -equals True
+
+steps:
+- task: VisualStudioTestPlatformInstaller@1
+  displayName: 'Visual Studio Test Platform Installer'
+  
+- task: InstallTestCompleteAdapter@1
+  displayName: 'TestComplete test adapter installer'
+  inputs:
+    preferredExecutor: TC
+    installExecutor: false
+    updateExecutor: false
+    logsLevel: 0
+    reportAnyError: false
+  continueOnError: true
+  retryCountOnTaskFailure: 2
+- task: VSTest@2
+  displayName: 'VsTest - testAssemblies'
+  inputs:
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: '**\*.pjs'
+    searchFolder: '$(System.DefaultWorkingDirectory)'
+    resultsFolder: '$(System.DefaultWorkingDirectory)\TestResults'
+    vsTestVersion: 'toolsInstaller'
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)'
+    Contents: '**\BrandData.xlsx'
+    TargetFolder: 'C:\AzureTestData'
+    CleanTargetFolder: true
+    OverWrite: true
+  condition: succeededOrFailed()
